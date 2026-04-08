@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scio Township Meeting Search</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --green: #2e8b57;
+            --green-dark: #236b43;
+            --blue: #3498db;
+            --blue-light: #5dade2;
+            --yellow: #f4c430;
+            --sand: #f5f1eb;
+            --cream: #faf8f5;
+            --warm-gray: #6b7280;
+            --border: #e5e0d8;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: linear-gradient(180deg, var(--sand) 0%, #fff 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: white;
+            color: var(--green-dark);
+            padding: 24px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(46, 139, 87, 0.3);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-container {
+            flex-shrink: 0;
+        }
+        
+        .logo-img {
+            width: 200px;
+            height: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        
+        .header-text h1 {
+            font-size: 34px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .header-text .subtitle {
+            font-size: 14px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+        
+        .search-container {
+            background: white;
+            padding: 24px;
+            margin: 24px auto;
+            max-width: 1200px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+            border: 1px solid var(--border);
+        }
+        
+        .how-to-use {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e8f4f8 100%);
+            border: 1px solid #c9e0f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .how-to-use h3 {
+            font-size: 14px;
+            color: var(--green-dark);
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .how-to-use h3::before {
+            content: "💡";
+        }
+        
+        .how-to-use table {
+            width: 100%;
+            font-size: 13px;
+        }
+        
+        .how-to-use td {
+            padding: 5px 12px 5px 0;
+            vertical-align: top;
+        }
+        
+        .how-to-use code {
+            background: white;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 12px;
+            border: 1px solid #d0e3f0;
+            color: var(--green-dark);
+            white-space: nowrap;
+        }
+        
+        .how-to-use .example {
+            color: var(--warm-gray);
+        }
+        
+        .search-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.2s;
+            background: var(--cream);
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+        
+        .search-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(46, 139, 87, 0.3);
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(46, 139, 87, 0.4);
+        }
+        
+        .export-btn {
+            padding: 14px 20px;
+            background: white;
+            color: var(--green-dark);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .export-btn:hover {
+            background: var(--sand);
+            border-color: var(--green);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group label {
+            font-size: 13px;
+            color: var(--warm-gray);
+            font-weight: 500;
+        }
+        
+        .filter-group select, .filter-group input[type="date"] {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: var(--navy);
+        }
+        
+        .filter-group select {
+            min-width: 200px;
+        }
+        
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+        }
+        
+        .stats {
+            background: var(--cream);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--warm-gray);
+            margin-top: 16px;
+            border: 1px solid var(--border);
+        }
+        
+        .stats strong {
+            color: var(--green-dark);
+        }
+        
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+        }
+        
+        .results-summary {
+            margin-bottom: 16px;
+            color: var(--warm-gray);
+            font-size: 15px;
+        }
+        
+        .results-summary strong {
+            color: var(--green-dark);
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(46, 139, 87, 0.06);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: box-shadow 0.2s;
+        }
+        
+        .result-card:hover {
+            box-shadow: 0 4px 20px rgba(46, 139, 87, 0.1);
+        }
+        
+        .result-header {
+            background: linear-gradient(135deg, var(--cream) 0%, #f8f6f3 100%);
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            color: var(--green-dark);
+            font-size: 15px;
+        }
+        
+        .result-meta {
+            font-size: 13px;
+            color: var(--warm-gray);
+        }
+        
+        .result-meta a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .result-meta a:hover {
+            text-decoration: underline;
+        }
+        
+        .result-matches {
+            padding: 8px 0;
+        }
+        
+        .match-item {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f5f3f0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            transition: background 0.15s;
+        }
+        
+        .match-item:last-child {
+            border-bottom: none;
+        }
+        
+        .match-item:hover {
+            background: var(--cream);
+        }
+        
+        .timestamp {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+            transition: all 0.2s;
+        }
+        
+        .timestamp:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .match-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #444;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #fff59d 0%, var(--yellow) 100%);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--green-dark);
+        }
+        
+        .context {
+            color: #888;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--warm-gray);
+        }
+        
+        .no-results h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: var(--green-dark);
+            font-weight: 600;
+        }
+        
+        .meeting-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 10px;
+        }
+        
+        .meeting-type-badge.bot {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+        }
+        
+        .meeting-type-badge.zba {
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+            color: #c2185b;
+        }
+        
+        .meeting-type-badge.lasa {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: #2e7d32;
+        }
+        
+        .meeting-type-badge.planning {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            color: #e65100;
+        }
+        
+        .meeting-type-badge.parks {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            color: #7b1fa2;
+        }
+        
+        .meeting-type-badge.dda {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            color: #00838f;
+        }
+        
+        .meeting-type-badge.manager {
+            background: linear-gradient(135deg, #fbe9e7 0%, #ffccbc 100%);
+            color: #bf360c;
+        }
+        
+        .meeting-type-badge.other {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            color: #616161;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Checkbox styling */
+        .filter-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--green);
+        }
+
+        /* ── Tab navigation ─────────────────────────────────────── */
+        .tab-nav {
+            background: white;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        .tab-btn {
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--warm-gray);
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            margin-bottom: -2px;
+        }
+        .tab-btn:hover { color: var(--green); }
+        .tab-btn.active { color: var(--green-dark); border-bottom-color: var(--green); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Agenda result styles ───────────────────────────────── */
+        .agenda-result-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin: 0 auto 16px;
+            max-width: 1200px;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .agenda-result-card:hover { box-shadow: 0 4px 16px rgba(46,139,87,0.12); }
+        .agenda-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: var(--sand);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .agenda-body-name { font-weight: 600; font-size: 15px; color: var(--green-dark); }
+        .agenda-date { font-size: 13px; color: var(--warm-gray); }
+        .agenda-granicus-link {
+            font-size: 13px; color: var(--green); text-decoration: none;
+            font-weight: 500; white-space: nowrap;
+        }
+        .agenda-granicus-link:hover { text-decoration: underline; }
+        .agenda-match {
+            padding: 10px 18px;
+            font-size: 13.5px;
+            line-height: 1.7;
+            border-bottom: 1px solid var(--border);
+            color: #444;
+        }
+        .agenda-match:last-child { border-bottom: none; }
+        .agenda-match .highlight { background: #fff3cd; font-weight: 600; border-radius: 2px; padding: 0 1px; }
+        .agenda-no-results { text-align: center; padding: 48px 24px; color: var(--warm-gray); }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .search-row {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .how-to-use table {
+                font-size: 12px;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo-container">
+                <img class="logo-img" src="scio_logo.png" alt="Scio Township Logo">
+            </div>
+            <div class="header-text">
+                <h1>Scio Township Meeting Search</h1>
+                <p class="subtitle">Search meeting transcripts and agenda packets</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="background:white; box-shadow: 0 2px 8px rgba(46,139,87,0.1);">
+        <div class="tab-nav">
+            <button class="tab-btn active" id="tab-btn-transcripts" onclick="switchTab('transcripts')">&#128249; Meeting Transcripts</button>
+            <button class="tab-btn" id="tab-btn-agendas" onclick="switchTab('agendas')">&#128196; Meeting Agendas</button>
+        </div>
+    </div>
+
+    <div id="tab-transcripts" class="tab-panel active">
+
+    <div class="search-container">
+        
+        
+        <div class="search-row">
+            <input type="text" class="search-input" id="searchInput" 
+                   placeholder="Search for topics, names, keywords..." 
+                   onkeypress="if(event.key==='Enter') doSearch()">
+            <button class="search-btn" onclick="doSearch()">🔍 Search</button>
+            <button class="export-btn" onclick="exportResults()">📄 Export Results</button>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label>Meeting Type:</label>
+                <select id="meetingTypeFilter" onchange="doSearch()">
+                    <option value="">All Meetings</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>From:</label>
+                <input type="date" id="dateFrom" onchange="doSearch()">
+            </div>
+            
+            <div class="filter-group">
+                <label>To:</label>
+                <input type="date" id="dateTo" onchange="doSearch()">
+            </div>
+            
+            <div class="filter-group" id="dateRangeHint" style="font-size: 12px; color: #888;"></div>
+            
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="caseSensitive"> Case sensitive
+                </label>
+            </div>
+        </div>
+        
+        <div class="how-to-use">
+            <h3>Search Tips</h3>
+            <table>
+                <tr>
+                    <td><code>budget</code></td>
+                    <td class="example">Simple search - finds all mentions of "budget"</td>
+                </tr>
+                <tr>
+                    <td><code>zoning AND variance</code></td>
+                    <td class="example">Both terms must appear in the line or surrounding context</td>
+                </tr>
+                <tr>
+                    <td><code>sewer OR water</code></td>
+                    <td class="example">Either term matches</td>
+                </tr>
+                <tr>
+                    <td><code>budget NOT approved</code></td>
+                    <td class="example">Finds "budget" but excludes results containing "approved"</td>
+                </tr>
+                <tr>
+                    <td><code>"motion to approve"</code></td>
+                    <td class="example">Exact phrase match</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="stats" id="stats">
+            <span id="loadStatus">Loading transcripts...</span>
+        </div>
+    </div>
+    
+    <div class="results-container" id="resultsContainer">
+        
+    </div>
+
+    </div><!-- /tab-transcripts -->
+
+    <div id="tab-agendas" class="tab-panel">
+
+        <div class="search-container">
+            <div class="search-row">
+                <input type="text" class="search-input" id="agendaSearchInput"
+                    placeholder="Search agenda packets (e.g. budget, solar, annexation)..."
+                    oninput="doAgendaSearch()" onkeydown="if(event.key==='Enter')doAgendaSearch()">
+                <button class="search-btn" onclick="doAgendaSearch()">🔍 Search</button>
+            </div>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Meeting Body</label>
+                    <select id="agendaBodyFilter" onchange="doAgendaSearch()">
+                        <option value="">All Bodies</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>From</label>
+                    <input type="date" id="agendaDateFrom" onchange="doAgendaSearch()">
+                </div>
+                <div class="filter-group">
+                    <label>To</label>
+                    <input type="date" id="agendaDateTo" onchange="doAgendaSearch()">
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <label><input type="checkbox" id="agendaCaseSensitive" onchange="doAgendaSearch()"> Case sensitive</label>
+                </div>
+            </div>
+            <div class="stats" id="agendaStats">
+                <span id="agendaLoadStatus">Loading agenda index...</span>
+            </div>
+        </div>
+        <div class="results-container" id="agendaResultsContainer"></div>
+
+    </div><!-- /tab-agendas -->
+
+    <script>
+        let transcripts = [];
+        let currentResults = [];
+        let meetingTypeCounts = {};
+        let earliestDate = null;
+        let latestDate = null;
+        
+        const monthMap = {
+            'january': 0, 'february': 1, 'march': 2, 'april': 3,
+            'may': 4, 'june': 5, 'july': 6, 'august': 7,
+            'september': 8, 'october': 9, 'november': 10, 'december': 11,
+            'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3,
+            'jun': 5, 'jul': 6, 'aug': 7, 'sep': 8, 'sept': 8,
+            'oct': 9, 'nov': 10, 'dec': 11
+        };
+        
+        function parseDateFromTitle(title) {
+            let m;
+            
+            // "January 14, 2025" or "Jan 14 2025" or "January 14th, 2025" or "Sept. 6, 22"
+            m = title.match(/(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{2,4})/i);
+            if (m) {
+                const mo = monthMap[m[1].toLowerCase()];
+                let yr = parseInt(m[3]);
+                if (yr < 100) yr += 2000;
+                if (mo !== undefined) return new Date(yr, mo, parseInt(m[2]));
+            }
+            
+            // "14-May-2023" or "11-May-2023"
+            m = title.match(/(\d{1,2})[-\s](January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?[-\s](\d{4})/i);
+            if (m) {
+                const mo = monthMap[m[2].toLowerCase()];
+                if (mo !== undefined) return new Date(parseInt(m[3]), mo, parseInt(m[1]));
+            }
+            
+            // "1/14/2025" or "1-14-2025" or "1_14_2025" (with optional spaces around separators)
+            m = title.match(/(\d{1,2})\s*[\/\-_]\s*(\d{1,2})\s*[\/\-_]\s*(\d{2,4})/);
+            if (m) {
+                let year = parseInt(m[3]);
+                if (year < 100) year += 2000;
+                return new Date(year, parseInt(m[1]) - 1, parseInt(m[2]));
+            }
+            
+            // "3 28 2023" (spaces only, 3 number groups)
+            m = title.match(/(\d{1,2})\s+(\d{1,2})\s+(\d{4})/);
+            if (m) {
+                const mo = parseInt(m[1]);
+                const day = parseInt(m[2]);
+                if (mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+                    return new Date(parseInt(m[3]), mo - 1, day);
+                }
+            }
+            
+            return null;
+        }
+        
+        // Parse search query into tokens with operators
+        function parseQuery(query) {
+            const tokens = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < query.length; i++) {
+                const char = query[i];
+                
+                if (char === '"') {
+                    if (inQuotes) {
+                        if (current.trim()) {
+                            tokens.push({ type: 'phrase', value: current.trim() });
+                        }
+                        current = '';
+                    }
+                    inQuotes = !inQuotes;
+                } else if (inQuotes) {
+                    current += char;
+                } else if (char === ' ') {
+                    if (current.trim()) {
+                        const upper = current.trim().toUpperCase();
+                        if (upper === 'AND') {
+                            tokens.push({ type: 'AND' });
+                        } else if (upper === 'OR') {
+                            tokens.push({ type: 'OR' });
+                        } else if (upper === 'NOT') {
+                            tokens.push({ type: 'NOT' });
+                        } else {
+                            tokens.push({ type: 'word', value: current.trim() });
+                        }
+                    }
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            if (current.trim()) {
+                const upper = current.trim().toUpperCase();
+                if (upper === 'AND') {
+                    tokens.push({ type: 'AND' });
+                } else if (upper === 'OR') {
+                    tokens.push({ type: 'OR' });
+                } else if (upper === 'NOT') {
+                    tokens.push({ type: 'NOT' });
+                } else {
+                    tokens.push({ type: inQuotes ? 'phrase' : 'word', value: current.trim() });
+                }
+            }
+            
+            return tokens;
+        }
+        
+        // Check if text matches query tokens
+        function matchesQuery(text, contextText, tokens, caseSensitive) {
+            const searchText = caseSensitive ? text : text.toLowerCase();
+            const searchContext = caseSensitive ? contextText : contextText.toLowerCase();
+            const fullText = searchText + ' ' + searchContext;
+            
+            const includeTerms = [];
+            const excludeTerms = [];
+            const orGroups = [[]];
+            let currentOrGroup = 0;
+            let isNot = false;
+            
+            for (let i = 0; i < tokens.length; i++) {
+                const token = tokens[i];
+                
+                if (token.type === 'NOT') {
+                    isNot = true;
+                } else if (token.type === 'OR') {
+                    orGroups.push([]);
+                    currentOrGroup++;
+                } else if (token.type === 'AND') {
+                    // AND is default behavior
+                } else if (token.type === 'word' || token.type === 'phrase') {
+                    const term = caseSensitive ? token.value : token.value.toLowerCase();
+                    if (isNot) {
+                        excludeTerms.push(term);
+                        isNot = false;
+                    } else {
+                        orGroups[currentOrGroup].push(term);
+                    }
+                }
+            }
+            
+            // Check exclusions first
+            for (const term of excludeTerms) {
+                if (fullText.includes(term)) {
+                    return false;
+                }
+            }
+            
+            // OR groups
+            if (orGroups.length > 1) {
+                let anyGroupMatches = false;
+                let hasMainLineMatch = false;
+                
+                for (const group of orGroups) {
+                    if (group.length === 0) continue;
+                    const groupMatches = group.every(term => fullText.includes(term));
+                    if (groupMatches) {
+                        anyGroupMatches = true;
+                        if (group.some(term => searchText.includes(term))) {
+                            hasMainLineMatch = true;
+                        }
+                    }
+                }
+                
+                return anyGroupMatches && hasMainLineMatch;
+            }
+            
+            // Single group with AND logic
+            const terms = orGroups[0];
+            if (terms.length === 0) return false;
+            
+            const hasMainMatch = terms.some(term => searchText.includes(term));
+            const allInContext = terms.every(term => fullText.includes(term));
+            
+            return hasMainMatch && allInContext;
+        }
+        
+        // Get all search terms for highlighting (exclude NOT terms)
+        function getSearchTerms(tokens) {
+            const terms = [];
+            let isNot = false;
+            
+            for (const token of tokens) {
+                if (token.type === 'NOT') {
+                    isNot = true;
+                } else if (token.type === 'word' || token.type === 'phrase') {
+                    if (!isNot) {
+                        terms.push(token.value);
+                    }
+                    isNot = false;
+                } else {
+                    isNot = false;
+                }
+            }
+            
+            return terms;
+        }
+        
+        // Determine meeting type from title
+        function getMeetingType(title) {
+            if (title.includes('Board of Trustees') || title.includes('BOT')) {
+                return 'Board of Trustees';
+            } else if (title.includes('Zoning Board') || title.includes('ZBA')) {
+                return 'Zoning Board of Appeals';
+            } else if (title.includes('Loch Alpine')) {
+                return 'Loch Alpine Sanitary';
+            } else if (title.includes('Planning')) {
+                return 'Planning Commission';
+            } else if (title.includes('Parks') || title.includes('Recreation')) {
+                return 'Parks & Recreation';
+            } else if (title.includes('DDA')) {
+                return 'DDA';
+            } else if (title.includes('Manager')) {
+                return 'Manager Meetings';
+            } else {
+                return 'Other';
+            }
+        }
+        
+        // Get badge class for meeting type
+        function getBadgeClass(meetingType) {
+            const classMap = {
+                'Board of Trustees': 'bot',
+                'Zoning Board of Appeals': 'zba',
+                'Loch Alpine Sanitary': 'lasa',
+                'Planning Commission': 'planning',
+                'Parks & Recreation': 'parks',
+                'DDA': 'dda',
+                'Manager Meetings': 'manager',
+                'Other': 'other'
+            };
+            return classMap[meetingType] || 'other';
+        }
+        
+        // Parse the combined transcript file
+        function parseTranscripts(text) {
+            const meetings = [];
+            meetingTypeCounts = {};
+            earliestDate = null;
+            latestDate = null;
+            
+            const fileSections = text.split(/(?=^={40,}\nFILE:)/m);
+            
+            for (const section of fileSections) {
+                if (!section.trim()) continue;
+                
+                const titleMatch = section.match(/Title:\s*(.+)/);
+                const videoIdMatch = section.match(/Video ID:\s*(\S+)/);
+                const urlMatch = section.match(/URL:\s*(.+)/);
+                
+                if (!titleMatch) continue;
+                
+                const title = titleMatch[1].trim();
+                const videoId = videoIdMatch ? videoIdMatch[1].trim() : '';
+                const url = urlMatch ? urlMatch[1].trim() : '';
+                
+                let meetingDate = parseDateFromTitle(title);
+                
+                if (meetingDate) {
+                    const today = new Date();
+                    today.setHours(23, 59, 59, 999);
+                    
+                    if (meetingDate > today) {
+                        meetingDate = null;
+                    } else {
+                        if (!earliestDate || meetingDate < earliestDate) {
+                            earliestDate = meetingDate;
+                        }
+                        if (!latestDate || meetingDate > latestDate) {
+                            latestDate = meetingDate;
+                        }
+                    }
+                }
+                
+                const meetingType = getMeetingType(title);
+                meetingTypeCounts[meetingType] = (meetingTypeCounts[meetingType] || 0) + 1;
+                
+                const lines = [];
+                const lineRegex = /\[(\d{2}):(\d{2}):(\d{2})\]\s*(.+)/g;
+                let match;
+                while ((match = lineRegex.exec(section)) !== null) {
+                    const hours = parseInt(match[1]);
+                    const minutes = parseInt(match[2]);
+                    const seconds = parseInt(match[3]);
+                    const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                    lines.push({
+                        timestamp: `${match[1]}:${match[2]}:${match[3]}`,
+                        seconds: totalSeconds,
+                        text: match[4].trim()
+                    });
+                }
+                
+                if (lines.length > 0) {
+                    meetings.push({
+                        title,
+                        videoId,
+                        url,
+                        meetingDate,
+                        meetingType,
+                        lines
+                    });
+                }
+            }
+            
+            return meetings;
+        }
+        
+        function updateMeetingTypeDropdown() {
+            const select = document.getElementById('meetingTypeFilter');
+            const currentValue = select.value;
+            
+            let totalMeetings = transcripts.length;
+            
+            select.innerHTML = `<option value="">All Meetings (${totalMeetings})</option>`;
+            
+            const sortedTypes = Object.entries(meetingTypeCounts)
+                .sort((a, b) => b[1] - a[1]);
+            
+            for (const [type, count] of sortedTypes) {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = `${type} (${count})`;
+                select.appendChild(option);
+            }
+            
+            if (currentValue) {
+                select.value = currentValue;
+            }
+        }
+        
+        function updateDateFilters() {
+            const hint = document.getElementById('dateRangeHint');
+            
+            if (earliestDate && latestDate) {
+                const formatDate = (d) => {
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                };
+                hint.textContent = `Transcripts range from ${formatDate(earliestDate)} to ${formatDate(latestDate)}`;
+            }
+        }
+        
+        function loadTranscriptData(text) {
+            transcripts = parseTranscripts(text);
+            updateMeetingTypeDropdown();
+            updateDateFilters();
+            updateStats();
+        }
+        
+        function showLoadError() {
+            document.getElementById('loadStatus').innerHTML = `
+                <span style="color:#dc3545;">⚠️ Transcript file not found.</span>
+            `;
+        }
+        
+        async function tryAutoLoad() {
+            try {
+                const response = await fetch('all_transcripts.txt');
+                if (response.ok) {
+                    const text = await response.text();
+                    loadTranscriptData(text);
+                } else {
+                    showLoadError();
+                }
+            } catch (e) {
+                showLoadError();
+            }
+        }
+        
+        function updateStats() {
+            const stats = document.getElementById('loadStatus');
+            if (transcripts.length === 0) {
+                stats.textContent = 'No transcripts loaded';
+                return;
+            }
+            
+            let totalLines = 0;
+            transcripts.forEach(t => totalLines += t.lines.length);
+            
+            const meetingTypeFilter = document.getElementById('meetingTypeFilter').value;
+            
+            if (meetingTypeFilter) {
+                const filteredCount = meetingTypeCounts[meetingTypeFilter] || 0;
+                const filteredLines = transcripts
+                    .filter(t => t.meetingType === meetingTypeFilter)
+                    .reduce((sum, t) => sum + t.lines.length, 0);
+                
+                stats.innerHTML = `<strong>${filteredCount}</strong> ${meetingTypeFilter} meetings • <strong>${filteredLines.toLocaleString()}</strong> lines`;
+            } else {
+                stats.innerHTML = `<strong>${transcripts.length}</strong> meetings • <strong>${totalLines.toLocaleString()}</strong> lines`;
+            }
+        }
+        
+        function doSearch() {
+            updateStats();
+            
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query || transcripts.length === 0) {
+                document.getElementById('resultsContainer').innerHTML = '';
+                return;
+            }
+            
+            const meetingTypeFilter = document.getElementById('meetingTypeFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value ? new Date(document.getElementById('dateFrom').value) : null;
+            const dateTo = document.getElementById('dateTo').value ? new Date(document.getElementById('dateTo').value) : null;
+            const caseSensitive = document.getElementById('caseSensitive').checked;
+            
+            const tokens = parseQuery(query);
+            currentResults = [];
+            
+            transcripts.forEach(meeting => {
+                if (meetingTypeFilter && meeting.meetingType !== meetingTypeFilter) return;
+                if (dateFrom && meeting.meetingDate && meeting.meetingDate < dateFrom) return;
+                if (dateTo && meeting.meetingDate && meeting.meetingDate > dateTo) return;
+                
+                const matches = [];
+                
+                meeting.lines.forEach((line, idx) => {
+                    const contextBefore = meeting.lines.slice(Math.max(0, idx - 2), idx);
+                    const contextAfter = meeting.lines.slice(idx + 1, idx + 3);
+                    const contextText = [...contextBefore, ...contextAfter].map(l => l.text).join(' ');
+                    
+                    if (matchesQuery(line.text, contextText, tokens, caseSensitive)) {
+                        matches.push({
+                            line,
+                            contextBefore,
+                            contextAfter,
+                            index: idx
+                        });
+                    }
+                });
+                
+                if (matches.length > 0) {
+                    currentResults.push({
+                        meeting,
+                        matches
+                    });
+                }
+            });
+            
+            renderResults(query, tokens);
+        }
+        
+        function renderResults(query, tokens) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (currentResults.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h3>No Results Found</h3>
+                        <p>No matches for "<strong>${escapeHtml(query)}</strong>" in the loaded transcripts.</p>
+                        <p style="margin-top:10px;font-size:14px;">Try different keywords or adjust filters.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let totalMatches = 0;
+            currentResults.forEach(r => totalMatches += r.matches.length);
+            
+            const searchTerms = getSearchTerms(tokens);
+            
+            let html = `<p class="results-summary">
+                Found <strong>${totalMatches}</strong> matches in <strong>${currentResults.length}</strong> meetings for "<strong>${escapeHtml(query)}</strong>"
+            </p>`;
+            
+            currentResults.forEach(result => {
+                const meeting = result.meeting;
+                const badgeClass = getBadgeClass(meeting.meetingType);
+                
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <div>
+                                <span class="meeting-type-badge ${badgeClass}">${meeting.meetingType}</span>
+                                <span class="result-title">${escapeHtml(meeting.title)}</span>
+                            </div>
+                            <div class="result-meta">
+                                ${result.matches.length} match${result.matches.length > 1 ? 'es' : ''} • 
+                                <a href="${meeting.url}" target="_blank">Watch on YouTube ↗</a>
+                            </div>
+                        </div>
+                        <div class="result-matches">
+                `;
+                
+                result.matches.forEach(match => {
+                    const youtubeLink = `https://www.youtube.com/watch?v=${meeting.videoId}&t=${match.line.seconds}s`;
+                    
+                    html += `
+                        <div class="match-item">
+                            <a href="${youtubeLink}" target="_blank" class="timestamp" title="Jump to this moment in video">
+                                ${match.line.timestamp}
+                            </a>
+                            <div class="match-text">
+                    `;
+                    
+                    if (match.contextBefore.length > 0) {
+                        html += `<span class="context">`;
+                        match.contextBefore.forEach(ctx => {
+                            html += `${highlightTerms(ctx.text, searchTerms)} `;
+                        });
+                        html += `</span>`;
+                    }
+                    
+                    html += highlightTerms(match.line.text, searchTerms);
+                    
+                    if (match.contextAfter.length > 0) {
+                        html += ` <span class="context">`;
+                        match.contextAfter.forEach(ctx => {
+                            html += `${highlightTerms(ctx.text, searchTerms)} `;
+                        });
+                        html += `</span>`;
+                    }
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function highlightTerms(text, terms) {
+            const caseSensitive = document.getElementById('caseSensitive').checked;
+            let escaped = escapeHtml(text);
+            
+            for (const term of terms) {
+                const escapedTerm = escapeHtml(term);
+                const regex = new RegExp(`(${escapeRegex(escapedTerm)})`, caseSensitive ? 'g' : 'gi');
+                escaped = escaped.replace(regex, '<span class="highlight">$1</span>');
+            }
+            
+            return escaped;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+        
+        function exportResults() {
+            if (currentResults.length === 0) {
+                alert('No results to export. Run a search first.');
+                return;
+            }
+            
+            const query = document.getElementById('searchInput').value.trim();
+            let text = `Scio Township Meeting Search Results\n`;
+            text += `Search Term: "${query}"\n`;
+            text += `Date: ${new Date().toLocaleString()}\n`;
+            text += `${'='.repeat(60)}\n\n`;
+            
+            currentResults.forEach(result => {
+                text += `MEETING: ${result.meeting.title}\n`;
+                text += `URL: ${result.meeting.url}\n`;
+                text += `Matches: ${result.matches.length}\n`;
+                text += `${'-'.repeat(40)}\n\n`;
+                
+                result.matches.forEach(match => {
+                    const youtubeLink = `https://www.youtube.com/watch?v=${result.meeting.videoId}&t=${match.line.seconds}s`;
+                    text += `[${match.line.timestamp}] ${match.line.text}\n`;
+                    text += `  → ${youtubeLink}\n\n`;
+                });
+                
+                text += `\n`;
+            });
+            
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `search_results_${query.replace(/\s+/g, '_')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ── Agenda tab ────────────────────────────────────────────
+
+        let agendaIndex = [];
+        let agendaLoaded = false;
+
+        async function loadAgendaIndex() {
+            try {
+                const resp = await fetch('agenda_index.json');
+                if (!resp.ok) throw new Error('not found');
+                agendaIndex = await resp.json();
+                agendaLoaded = true;
+                populateAgendaBodies();
+                document.getElementById('agendaLoadStatus').innerHTML =
+                    `<strong>${agendaIndex.length}</strong> agenda packets loaded`;
+            } catch(e) {
+                document.getElementById('agendaLoadStatus').innerHTML =
+                    '<span style="color:#dc3545;">&#9888;&#65039; agenda_index.json not found. Run scio_agenda_extract.py then upload to Azure.</span>';
+            }
+        }
+
+        function populateAgendaBodies() {
+            const bodies = [...new Set(agendaIndex.map(e => e.body))].sort();
+            const sel = document.getElementById('agendaBodyFilter');
+            bodies.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b; opt.textContent = b;
+                sel.appendChild(opt);
+            });
+        }
+
+        function doAgendaSearch() {
+            const query = document.getElementById('agendaSearchInput').value.trim();
+            const bodyFilter = document.getElementById('agendaBodyFilter').value;
+            const dateFrom = document.getElementById('agendaDateFrom').value;
+            const dateTo = document.getElementById('agendaDateTo').value;
+            const caseSensitive = document.getElementById('agendaCaseSensitive').checked;
+            const container = document.getElementById('agendaResultsContainer');
+
+            if (!agendaLoaded) { container.innerHTML = ''; return; }
+            if (!query) { container.innerHTML = ''; updateAgendaStats(); return; }
+
+            const terms = parseAgendaQuery(query);
+
+            let results = agendaIndex.filter(entry => {
+                if (bodyFilter && entry.body !== bodyFilter) return false;
+                if (dateFrom && entry.date < dateFrom) return false;
+                if (dateTo && entry.date > dateTo) return false;
+                return matchesTerms(entry.text, terms, caseSensitive);
+            });
+
+            updateAgendaStats(results.length, query);
+
+            if (results.length === 0) {
+                container.innerHTML = '<div class="agenda-no-results"><h3>No results found</h3><p>Try different keywords or remove filters.</p></div>';
+                return;
+            }
+
+            let html = `<p class="results-summary"><strong>${results.length}</strong> meeting${results.length !== 1 ? 's' : ''} matched &ldquo;${escapeHtml(query)}&rdquo;</p>`;
+
+            results.forEach(entry => {
+                const snippets = getAgendaSnippets(entry.text, terms, caseSensitive, 3);
+                const dateFormatted = formatAgendaDate(entry.date);
+                html += `
+                    <div class="agenda-result-card">
+                        <div class="agenda-result-header">
+                            <div>
+                                <span class="agenda-body-name">${escapeHtml(entry.body)}</span>
+                                <span class="agenda-date"> &mdash; ${dateFormatted}</span>
+                            </div>
+                            <a href="${escapeHtml(entry.granicus_url)}" target="_blank" class="agenda-granicus-link">View on Granicus &rarr;</a>
+                        </div>`;
+                snippets.forEach(s => {
+                    html += `<div class="agenda-match">${highlightAgenda(s, terms, caseSensitive)}</div>`;
+                });
+                html += `</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function parseAgendaQuery(query) {
+            const terms = [];
+            const re = /"([^"]+)"|(\S+)/g;
+            let m;
+            while ((m = re.exec(query)) !== null) {
+                terms.push(m[1] || m[2]);
+            }
+            return terms.filter(t => t.length > 0);
+        }
+
+        function matchesTerms(text, terms, caseSensitive) {
+            const haystack = caseSensitive ? text : text.toLowerCase();
+            return terms.every(t => {
+                const needle = caseSensitive ? t : t.toLowerCase();
+                return haystack.includes(needle);
+            });
+        }
+
+        function getAgendaSnippets(text, terms, caseSensitive, maxSnippets) {
+            const lines = text.split(/\n+/).map(l => l.trim()).filter(l => l.length > 15);
+            const snippets = [];
+            const seen = new Set();
+
+            for (const line of lines) {
+                if (snippets.length >= maxSnippets) break;
+                const check = caseSensitive ? line : line.toLowerCase();
+                const hit = terms.some(t => check.includes(caseSensitive ? t : t.toLowerCase()));
+                if (hit && !seen.has(line.slice(0, 40))) {
+                    const trimmed = line.length > 300 ? line.slice(0, 300) + '\u2026' : line;
+                    snippets.push(trimmed);
+                    seen.add(line.slice(0, 40));
+                }
+            }
+            return snippets;
+        }
+
+        function highlightAgenda(text, terms, caseSensitive) {
+            let result = escapeHtml(text);
+            terms.forEach(term => {
+                const escaped = escapeHtml(term);
+                const flags = caseSensitive ? 'g' : 'gi';
+                result = result.replace(new RegExp(escapeRegex(escaped), flags),
+                    '<span class="highlight">$&</span>');
+            });
+            return result;
+        }
+
+        function formatAgendaDate(dateStr) {
+            if (!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            const months = ['','January','February','March','April','May','June',
+                           'July','August','September','October','November','December'];
+            return `${months[parseInt(m)] || m} ${parseInt(d)}, ${y}`;
+        }
+
+        function updateAgendaStats(resultCount, query) {
+            const el = document.getElementById('agendaLoadStatus');
+            if (!agendaLoaded) return;
+            if (resultCount === undefined) {
+                el.innerHTML = `<strong>${agendaIndex.length}</strong> agenda packets loaded`;
+            } else {
+                el.innerHTML = `<strong>${resultCount}</strong> of <strong>${agendaIndex.length}</strong> packets matched`;
+            }
+        }
+
+        // ── Tab switching ─────────────────────────────────────────
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('tab-btn-' + tab).classList.add('active');
+            if (tab === 'agendas' && !agendaLoaded) loadAgendaIndex();
+        }
+
+        // Initialize
+        document.getElementById('searchInput').focus();
+        setTimeout(function() {
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+        }, 0);
+        tryAutoLoad();
+    </script>
+</body>
+</html>
