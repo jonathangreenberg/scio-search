@@ -1,0 +1,14 @@
+# Data files (deployed directly to Azure, too large for git)
+all_transcripts.txt
+transcript_index.csv
+agenda_index.json
+transcripts/
+scio_agendas/
+failed_videos.txt
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
